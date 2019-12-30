@@ -26,6 +26,7 @@ public class S3PerformanceTest implements Callable<TestResult> {
     private final String secretKey;
     private final String endpointUrl;
     private final String bucketName;
+    private final String keyPrefix;
     private final Operation operation;
     private final int threads;
     private final int n;
@@ -52,7 +53,7 @@ public class S3PerformanceTest implements Callable<TestResult> {
      * @param useKeepAlive   use TCP keep alive
      * @param keyFileName    name of file with object keys
      */
-    public S3PerformanceTest(String accessKey, String secretKey, String endpointUrl, String bucketName,
+    public S3PerformanceTest(String accessKey, String secretKey, String endpointUrl, String bucketName, String keyPrefix,
                              Operation operation, int threads, int n, int size, boolean useHttp, boolean useGzip,
                              String signerOverride, boolean useKeepAlive, boolean usePathStyleAccess,
                              String keyFileName) {
@@ -60,6 +61,7 @@ public class S3PerformanceTest implements Callable<TestResult> {
         this.secretKey = secretKey;
         this.endpointUrl = endpointUrl;
         this.bucketName = bucketName;
+        this.keyPrefix = keyPrefix;
         this.operation = operation;
         this.threads = threads;
         this.n = n;
@@ -74,7 +76,7 @@ public class S3PerformanceTest implements Callable<TestResult> {
 
     @Override
     public TestResult call() {
-        AmazonS3 s3Client = buildS3Client();
+        AmazonS3 s3Client = buildS3Client(threads);
 
         ExecutorService executorService = Executors.newFixedThreadPool(threads);
 
@@ -115,14 +117,16 @@ public class S3PerformanceTest implements Callable<TestResult> {
     // -----------------------------------------------------------------------------------------------------------------
 
     /**
+     * @param threads 
      * @return S3 client
      */
-    private AmazonS3 buildS3Client() {
+    private AmazonS3 buildS3Client(int threads) {
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
 
         ClientConfiguration clientConfiguration = new ClientConfiguration()
+        		.withMaxConnections(threads > ClientConfiguration.DEFAULT_MAX_CONNECTIONS ? threads : ClientConfiguration.DEFAULT_MAX_CONNECTIONS)
                 .withProtocol(useHttp ? Protocol.HTTP : Protocol.HTTPS)
-                .withUserAgent("s3pt")
+                .withUserAgentPrefix("s3pt")
                 .withGzip(useGzip)
                 .withTcpKeepAlive(useKeepAlive);
 
@@ -160,7 +164,7 @@ public class S3PerformanceTest implements Callable<TestResult> {
             case RANDOM_READ_METADATA:
                 return new RandomReadMetadata(s3Client, bucketName, n, keyFileName);
             case UPLOAD:
-                return new Upload(s3Client, bucketName, n, size);
+                return new Upload(s3Client, bucketName, keyPrefix, n, size);
             case UPLOAD_AND_READ:
                 return new UploadAndRead(s3Client, bucketName, n, size);
             default:

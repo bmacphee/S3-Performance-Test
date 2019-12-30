@@ -21,6 +21,7 @@ public class Main {
 
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
     private static final String DEFAULT_S3_ENDPOINT = "s3.amazonaws.com";
+    private static final String DEFAULT_KEY_PREFIX = "u/";
     private static final String KEY_FILE_NAME_MISSING_FOR_CREATE = "Operation CREATE_KEY_FILE requires a keyFileName";
 
     @Option(name = "-t", aliases = {"--threads"}, usage = "number of threads")
@@ -43,6 +44,9 @@ public class Main {
 
     @Option(name = "--bucketName", usage = "name of bucket")
     private String bucketName = null;
+    
+    @Option(name = "--keyPrefix", usage = "optional prefix to append to all keys")
+    private String keyPrefix = DEFAULT_KEY_PREFIX;
 
     @Option(name = "--operation", usage = "operation")
     private String operation = Operation.UPLOAD.name();
@@ -111,6 +115,7 @@ public class Main {
                 secretKey,
                 endpointUrl,
                 bucketName,
+                keyPrefix,
                 Operation.valueOf(operation),
                 threads,
                 n,

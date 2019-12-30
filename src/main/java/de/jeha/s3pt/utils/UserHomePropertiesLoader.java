@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -27,7 +28,7 @@ class UserHomePropertiesLoader implements UserPropertiesLoader {
         final File cfgFile = new File(cfgFileName);
 
         if (cfgFile.exists()) {
-            for (String line : FileUtils.readLines(cfgFile)) {
+            for (String line : FileUtils.readLines(cfgFile, StandardCharsets.UTF_8)) {
                 String parts[] = StringUtils.split(line.trim(), "=", 2);
                 if (parts.length != 2) {
                     LOG.warn("Ignore line '{}', invalid format", line);

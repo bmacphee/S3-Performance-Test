@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author jenshadlich@googlemail.com
@@ -42,7 +43,7 @@ public class CreateKeyFile extends AbstractOperation {
         int objectsRead = 0;
 
         File keyFile = new File(keyFileName);
-        FileUtils.writeStringToFile(keyFile, "");
+        FileUtils.writeStringToFile(keyFile, "", StandardCharsets.UTF_8);
 
         boolean truncated;
         ObjectListing previousObjectListing = null;
@@ -56,8 +57,8 @@ public class CreateKeyFile extends AbstractOperation {
             LOG.debug("Loaded {} objects", objectListing.getObjectSummaries().size());
 
             for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
-                FileUtils.writeStringToFile(keyFile, objectSummary.getKey(), true);
-                FileUtils.writeStringToFile(keyFile, System.lineSeparator(), true);
+                FileUtils.writeStringToFile(keyFile, objectSummary.getKey(), StandardCharsets.UTF_8, true);
+                FileUtils.writeStringToFile(keyFile, System.lineSeparator(), StandardCharsets.UTF_8, true);
                 objectsRead++;
                 if (objectsRead >= n) {
                     break;

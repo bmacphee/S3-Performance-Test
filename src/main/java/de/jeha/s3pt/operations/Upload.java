@@ -17,50 +17,54 @@ import java.util.UUID;
  */
 public class Upload extends AbstractOperation {
 
-    private final static Logger LOG = LoggerFactory.getLogger(Upload.class);
+	private final static Logger LOG = LoggerFactory.getLogger(Upload.class);
 
-    private final AmazonS3 s3Client;
-    private final String bucket;
-    private final int n;
-    private final int size;
+	private final AmazonS3 s3Client;
+	private final String bucket;
+	private final String keyPrefix;
+	private final int n;
+	private final int size;
 
-    public Upload(AmazonS3 s3Client, String bucket, int n, int size) {
-        this.s3Client = s3Client;
-        this.bucket = bucket;
-        this.n = n;
-        this.size = size;
-    }
+	public Upload(AmazonS3 s3Client, String bucket, String keyPrefix, int n, int size) {
+		this.s3Client = s3Client;
+		this.bucket = bucket;
+		this.keyPrefix = keyPrefix;
+		this.n = n;
+		this.size = size;
+	}
 
-    @Override
-    public OperationResult call() {
-        LOG.info("Upload: n={}, size={} byte", n, size);
+	@Override
+	public OperationResult call() {
+		LOG.info("Upload: n={}, size={} byte", n, size);
 
-        for (int i = 0; i < n; i++) {
-            final byte data[] = RandomDataGenerator.generate(size);
-            final String key = UUID.randomUUID().toString();
-            LOG.debug("Uploading object: {}", key);
+		for (int i = 0; i < n; i++) {
+			final byte data[] = RandomDataGenerator.generate(size);
+			final String key = UUID.randomUUID().toString();
+			String bucketPostfix = String.valueOf(Integer.valueOf(key.substring(0, 1), 16) / 16);
 
-            final ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentLength(data.length);
+			LOG.debug("Uploading object: {}", key);
 
-            PutObjectRequest putObjectRequest =
-                    new PutObjectRequest(bucket, key, new ByteArrayInputStream(data), objectMetadata);
+			final ObjectMetadata objectMetadata = new ObjectMetadata();
+			objectMetadata.setContentLength(data.length);
 
-            StopWatch stopWatch = new StopWatch();
-            stopWatch.start();
+			PutObjectRequest putObjectRequest = new PutObjectRequest(bucket + bucketPostfix, key,
+					new ByteArrayInputStream(data), objectMetadata);
 
-            s3Client.putObject(putObjectRequest);
+			StopWatch stopWatch = new StopWatch();
+			stopWatch.start();
 
-            stopWatch.stop();
+			s3Client.putObject(putObjectRequest);
 
-            LOG.debug("Time = {} ms", stopWatch.getTime());
-            getStats().addValue(stopWatch.getTime());
+			stopWatch.stop();
 
-            if (i > 0 && i % 1000 == 0) {
-                LOG.info("Progress: {} of {}", i, n);
-            }
-        }
+			LOG.debug("Time = {} ms", stopWatch.getTime());
+			getStats().addValue(stopWatch.getTime());
 
-        return new OperationResult(getStats());
-    }
+			if (i > 0 && i % 1000 == 0) {
+				LOG.info("Progress: {} of {}", i, n);
+			}
+		}
+
+		return new OperationResult(getStats());
+	}
 }

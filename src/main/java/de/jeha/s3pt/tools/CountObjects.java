@@ -36,7 +36,7 @@ public class CountObjects {
 
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .withProtocol(Protocol.HTTP)
-                .withUserAgent("CountObjects")
+                .withUserAgentPrefix("CountObjects")
                 .withSignerOverride(Constants.S3_SIGNER_TYPE);
 
         AmazonS3 s3Client = new AmazonS3Client(credentials, clientConfiguration);

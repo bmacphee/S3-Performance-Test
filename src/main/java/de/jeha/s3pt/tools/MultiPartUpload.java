@@ -10,8 +10,6 @@ import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.*;
 import de.jeha.s3pt.Constants;
 import de.jeha.s3pt.utils.UserProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +23,8 @@ import java.util.Properties;
  */
 public class MultiPartUpload {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MultiPartUpload.class);
+	//unused
+    //private static final Logger LOG = LoggerFactory.getLogger(MultiPartUpload.class);
 
     public static void main(String... args) throws IOException {
         Locale.setDefault(Locale.ENGLISH);
@@ -41,7 +40,7 @@ public class MultiPartUpload {
 
         ClientConfiguration clientConfiguration = new ClientConfiguration()
                 .withProtocol(Protocol.HTTP)
-                .withUserAgent("MultiPartUpload")
+                .withUserAgentPrefix("MultiPartUpload")
                 .withSignerOverride(Constants.S3_SIGNER_TYPE);
 
         AmazonS3 s3Client = new AmazonS3Client(credentials, clientConfiguration);
